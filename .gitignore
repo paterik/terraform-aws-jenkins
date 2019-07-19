@@ -1,11 +1,70 @@
-# Compiled files
+#
+# terraform, compiled files
+# --
+
 *.tfstate
 *.tfstate.backup
-
-# Module directory
-.terraform
-.idea
-*.iml
-
 .build-harness
 build-harness
+
+#
+# temporary terraform files
+# --
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform
+tfplan
+
+#
+# IntelliJ project files
+# --
+
+.idea
+out
+gen
+*.iml
+
+#
+# ignore all previously mounted shared sub folders
+# --
+
+*/share/*
+*/volumes/*
+
+#
+# keep all gitkeep files
+# --
+
+!**/.gitkeep
+
+#
+# ignore logs and tmp file dumps
+# --
+
+*.tmp
+*.log
+.DS_Store
+
+#
+# local generated userdata shell scripts
+# --
+
+userdata*.sh
+
+#
+# local letsencrypt path
+# --
+
+.letsencrypt/*
+
+#
+# local archives
+# --
+
+*.zip
+*.rar
+*.gzip
+*.7z
+*.tar
+

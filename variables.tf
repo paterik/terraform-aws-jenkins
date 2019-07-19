@@ -1,23 +1,63 @@
+#
+# prepared variable stacks for our "secrets" based on *.tfvars
+#
+variable "aws_access_key" {
+  description = "AWS ACCESS_KEY"
+}
+
+variable "aws_secret_key" {
+  description = "AWS SECRET_KEY"
+}
+
 variable "aws_region" {
-  type        = "string"
-  default     = "us-west-2"
-  description = "AWS region in which to provision the AWS resources"
+
+  description = "AWS region to launch infrastructure"
+  default     = "eu-west-1"
 }
 
-variable "namespace" {
+variable "aws_account_id" {
   type        = "string"
-  description = "Namespace, which could be your organization name, e.g. 'cp' or 'cloudposse'"
+  description = "AWS Account ID. Used as CodeBuild ENV variable $AWS_ACCOUNT_ID when building Docker images. For more info: http://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html"
 }
 
-variable "name" {
+#
+# system variables
+#
+
+variable "sys_namespace" {
+  type        = "string"
+  description = "Namespace, which could be your organization name, e.g. 'acio' or 'allcloud'"
+}
+
+variable "sys_name" {
   type        = "string"
   description = "Solution name, e.g. 'app' or 'jenkins'"
   default     = "jenkins"
 }
 
+variable "sys_build" {
+  type        = "string"
+  description = "build definition, e.g. 'alpha', 'preview' or 'stable'"
+  default     = "preview"
+}
+
+#
+# application stack variables
+#
+
 variable "stage" {
   type        = "string"
-  description = "Stage, e.g. 'prod', 'staging', 'dev', or 'test'"
+  description = "Stage, e.g. 'prod', 'staging', 'dev', 'test' or 'preview'"
+}
+
+variable "vpc_cidr" {
+
+  description = "CIDR for VPC, subNet-CIDRs will be calculated based on that"
+
+  default = {
+    prod = "10.220.0.0/16"
+    dev  = "10.200.0.0/16"
+  }
 }
 
 variable "description" {
@@ -29,14 +69,18 @@ variable "description" {
 # http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/concepts.platforms.html#concepts.platforms.docker
 variable "solution_stack_name" {
   type        = "string"
-  default     = "64bit Amazon Linux 2017.09 v2.8.4 running Docker 17.09.1-ce"
+  default     = "64bit Amazon Linux 2018.03 v2.12.14 running Docker 18.06.1-ce"
   description = "Elastic Beanstalk stack, e.g. Docker, Go, Node, Java, IIS. For more info: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/concepts.platforms.html"
 }
 
 variable "master_instance_type" {
-  type        = "string"
-  default     = "t2.medium"
+
   description = "EC2 instance type for Jenkins master, e.g. 't2.medium'"
+
+  default = {
+    prod = "t2.medium"
+    dev  = "t2.large"
+  }
 }
 
 variable "vpc_id" {
@@ -96,31 +140,31 @@ variable "ssh_key_pair" {
 variable "github_oauth_token" {
   type        = "string"
   default     = ""
-  description = "GitHub Oauth Token for accessing private repositories. Leave it empty when deploying a public 'Jenkins' repository, e.g. https://github.com/cloudposse/jenkins"
+  description = "GitHub Oauth Token for accessing private repositories. Leave it empty when deploying a public 'Jenkins' repository, e.g. https://github.com/dunkelfrosch/ebsc-jenkins"
 }
 
 variable "github_organization" {
   type        = "string"
-  default     = "cloudposse"
-  description = "GitHub organization, e.g. 'cloudposse'. By default, this module will deploy 'https://github.com/cloudposse/jenkins' repository"
+  default     = "dunkelfrosch"
+  description = "GitHub organization, e.g. 'cloudposse'. By default, this module will deploy 'https://github.com/dunkelfrosch/ebsc-jenkins' repository"
 }
 
 variable "github_repo_name" {
   type        = "string"
-  default     = "jenkins"
-  description = "GitHub repository name, e.g. 'jenkins'. By default, this module will deploy 'https://github.com/cloudposse/jenkins' repository"
+  default     = "ebsc-jenkins"
+  description = "GitHub repository name, e.g. 'jenkins'. By default, this module will deploy 'https://github.com/dunkelfrosch/ebsc-jenkins' repository"
 }
 
 variable "github_branch" {
   type        = "string"
   default     = "master"
-  description = "GitHub repository branch, e.g. 'master'. By default, this module will deploy 'https://github.com/cloudposse/jenkins' master branch"
+  description = "GitHub repository branch, e.g. 'master'. By default, this module will deploy 'https://github.com/dunkelfrosch/ebsc-jenkins' master branch"
 }
 
 # http://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref.html#build-env-ref-available
 variable "build_image" {
   type        = "string"
-  default     = "aws/codebuild/docker:1.12.1"
+  default     = "aws/codebuild/standard:2.0"
   description = "CodeBuild build image, e.g. 'aws/codebuild/docker:1.12.1'. For more info: http://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref.html#build-env-ref-available"
 }
 
@@ -129,11 +173,6 @@ variable "build_compute_type" {
   type        = "string"
   default     = "BUILD_GENERAL1_SMALL"
   description = "CodeBuild compute type, e.g. 'BUILD_GENERAL1_SMALL'. For more info: http://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref.html#build-env-ref-compute-types"
-}
-
-variable "aws_account_id" {
-  type        = "string"
-  description = "AWS Account ID. Used as CodeBuild ENV variable $AWS_ACCOUNT_ID when building Docker images. For more info: http://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html"
 }
 
 variable "image_tag" {
@@ -190,7 +229,7 @@ variable "datapipeline_config" {
 
   default = {
     instance_type = "t2.small"
-    email         = ""
+    email         = "parick.paechnatz@allcloud.io"
     period        = "24 hours"
     timeout       = "60 Minutes"
   }
