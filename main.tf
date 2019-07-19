@@ -1,3 +1,9 @@
+#
+# provider based configuration
+#
+# -- { --
+#
+
 provider "aws" {
 
   region     = var.aws_region
@@ -5,7 +11,17 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
+#
+# -- } --
+#
+
 # Elastic Beanstalk Application
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
+
 module "elastic_beanstalk_application" {
 
   source      = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-application.git?ref=tags/0.1.6"
@@ -20,7 +36,15 @@ module "elastic_beanstalk_application" {
   tags        = var.tags
 }
 
-# Elastic Beanstalk Environment
+#
+# -- } --
+#
+
+# Elastic Beanstalk Environment##
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 module "elastic_beanstalk_environment" {
 
   source        = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-environment.git?ref=tags/0.13.0"
@@ -69,7 +93,16 @@ module "elastic_beanstalk_environment" {
   tags       = var.tags
 }
 
+#
+# -- } --
+#
+
 # Elastic Container Registry Docker Repository
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 module "ecr" {
 
   source     = "git::https://github.com/cloudposse/terraform-aws-ecr.git?ref=tags/0.7.0"
@@ -83,7 +116,16 @@ module "ecr" {
   tags       = var.tags
 }
 
+#
+# -- } --
+#
+
 # EFS to store Jenkins state (settings, jobs, etc.)
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 module "efs" {
 
   source             = "git::https://github.com/cloudposse/terraform-aws-efs.git?ref=tags/0.10.0"
@@ -107,7 +149,16 @@ module "efs" {
   region = var.aws_region
 }
 
+#
+# -- } --
+#
+
 # EFS backup to S3
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 module "efs_backup" {
 
   source                             = "git::https://github.com/cloudposse/terraform-aws-efs-backup.git?ref=tags/0.9.0"
@@ -129,7 +180,16 @@ module "efs_backup" {
   tags                               = var.tags
 }
 
+#
+# -- } --
+#
+
 # CodePipeline/CodeBuild to build Jenkins Docker image, store it to a ECR repo, and deploy it to Elastic Beanstalk running Docker stack
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 module "cicd" {
 
   source              = "git::https://github.com/cloudposse/terraform-aws-cicd.git?ref=tags/0.7.0"
@@ -161,7 +221,16 @@ module "cicd" {
   tags                = var.tags
 }
 
+#
+# -- } --
+#
+
 # Label for EC2 slaves
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 module "label_slaves" {
 
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.14.1"
@@ -175,7 +244,16 @@ module "label_slaves" {
   tags       = var.tags
 }
 
+#
+# -- } --
+#
+
 # Security Group for EC2 slaves
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 resource "aws_security_group" "slaves" {
 
   name        = module.label_slaves.id
@@ -207,6 +285,10 @@ resource "aws_security_group" "slaves" {
 
   tags = module.label_slaves.tags
 }
+
+#
+# -- } --
+#
 
 # Policy document with permissions to launch new EC2 instances
 # https://wiki.jenkins.io/display/JENKINS/Amazon+EC2+Plugin
@@ -241,7 +323,16 @@ data "aws_iam_policy_document" "slaves" {
   }
 }
 
+#
+# -- } --
+#
+
 # Policy for the EB EC2 instance profile to allow launching Jenkins slaves
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 resource "aws_iam_policy" "slaves" {
 
   path        = "/"
@@ -250,9 +341,22 @@ resource "aws_iam_policy" "slaves" {
   policy      = data.aws_iam_policy_document.slaves.json
 }
 
+#
+# -- } --
+#
+
 # Attach Policy to the EC2 instance profile to allow Jenkins master to launch and control slave EC2 instances
+#
+# dedicated jenkins-role init/var/constant block
+#
+# -- { --
+#
 resource "aws_iam_role_policy_attachment" "slaves" {
 
   role       = module.elastic_beanstalk_environment.ec2_instance_profile_role_name
   policy_arn = aws_iam_policy.slaves.arn
 }
+
+#
+# -- } --
+#
