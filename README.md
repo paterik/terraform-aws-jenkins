@@ -79,7 +79,7 @@ We literally have [*hundreds of terraform modules*][terraform_modules] that are 
 
 ## Usage
 
-For complete examples, see [examples](examples).
+For complete examples, see [examples](jenkins-blueprints/examples).
 
 
 

@@ -9,7 +9,7 @@ variable "max_availability_zones" {
 data "aws_availability_zones" "available" {}
 
 module "jenkins" {
-  source      = "../../"
+  source      = "..\/..\/..\/.."
   namespace   = "cp"
   name        = "jenkins"
   stage       = "prod"
@@ -21,8 +21,8 @@ module "jenkins" {
   availability_zones           = ["${slice(data.aws_availability_zones.available.names, 0, var.max_availability_zones)}"]
   vpc_id                       = "vpc-a22222ee"
   zone_id                      = "ZXXXXXXXXXXX"
-  public_subnets               = "${module.subnets.public_subnet_ids}"
-  private_subnets              = "${module.subnets.private_subnet_ids}"
+  public_subnets               = ["subnet-e63f82cb", "subnet-e66f44ab", "subnet-e88f42bd"]
+  private_subnets              = ["subnet-e99d23eb", "subnet-e77e12bb", "subnet-e58a52bc"]
   loadbalancer_certificate_arn = "XXXXXXXXXXXXXXXXX"
   ssh_key_pair                 = "ssh-key-jenkins"
 
@@ -43,24 +43,6 @@ module "jenkins" {
     JENKINS_PASS          = "123456"
     JENKINS_NUM_EXECUTORS = 4
   }
-
-  tags = {
-    BusinessUnit = "ABC"
-    Department   = "XYZ"
-  }
-}
-
-module "subnets" {
-  source              = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=master"
-  availability_zones  = ["${slice(data.aws_availability_zones.available.names, 0, var.max_availability_zones)}"]
-  namespace           = "cp"
-  name                = "jenkins"
-  stage               = "prod"
-  region              = "us-west-2"
-  vpc_id              = "vpc-a22222ee"
-  igw_id              = "igw-s32321vd"
-  cidr_block          = "10.0.0.0/16"
-  nat_gateway_enabled = "true"
 
   tags = {
     BusinessUnit = "ABC"

@@ -9,7 +9,7 @@ variable "max_availability_zones" {
 data "aws_availability_zones" "available" {}
 
 module "jenkins" {
-  source      = "../../"
+  source      = "..\/..\/..\/.."
   namespace   = "cp"
   name        = "jenkins"
   stage       = "prod"
