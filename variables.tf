@@ -55,8 +55,9 @@ variable "vpc_cidr" {
   description = "CIDR for VPC, subNet-CIDRs will be calculated based on that"
 
   default = {
-    prod = "10.220.0.0/16"
-    dev  = "10.200.0.0/16"
+    prod    = "10.220.0.0/16"
+    preview = "10.210.0.0/16"
+    dev     = "10.200.0.0/16"
   }
 }
 
@@ -78,8 +79,9 @@ variable "master_instance_type" {
   description = "EC2 instance type for Jenkins master, e.g. 't2.medium'"
 
   default = {
-    prod = "t2.medium"
-    dev  = "t2.large"
+    prod    = "t2.xlarge"
+    preview = "t2.large"
+    dev     = "t2.medium"
   }
 }
 
