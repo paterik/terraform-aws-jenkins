@@ -10,7 +10,6 @@ variable "aws_secret_key" {
 }
 
 variable "aws_region" {
-
   description = "AWS region to launch infrastructure"
   default     = "eu-west-1"
 }
@@ -26,13 +25,14 @@ variable "aws_account_id" {
 
 variable "sys_namespace" {
   type        = "string"
+  default     = "acio"
   description = "Namespace, which could be your organization name, e.g. 'acio' or 'allcloud'"
 }
 
 variable "sys_name" {
   type        = "string"
   description = "Solution name, e.g. 'app' or 'jenkins'"
-  default     = "jenkins"
+  default     = "app"
 }
 
 variable "sys_build" {

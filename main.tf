@@ -1,3 +1,36 @@
+data "aws_availability_zones"  "available" {}
+data "aws_iam_policy_document" "slaves" {
+
+  statement {
+
+    sid = "AllowLaunchingEC2Instances"
+
+    actions = [
+      "ec2:DescribeSpotInstanceRequests",
+      "ec2:CancelSpotInstanceRequests",
+      "ec2:GetConsoleOutput",
+      "ec2:RequestSpotInstances",
+      "ec2:RunInstances",
+      "ec2:StartInstances",
+      "ec2:StopInstances",
+      "ec2:TerminateInstances",
+      "ec2:CreateTags",
+      "ec2:DeleteTags",
+      "ec2:DescribeInstances",
+      "ec2:DescribeKeyPairs",
+      "ec2:DescribeRegions",
+      "ec2:DescribeImages",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
+      "iam:PassRole",
+    ]
+
+    resources = ["*"]
+    effect    = "Allow"
+  }
+}
+
 #
 # provider based configuration
 #
@@ -6,9 +39,9 @@
 
 provider "aws" {
 
-  region     = var.aws_region
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
+  region     = var.aws_region
 }
 
 #
@@ -26,9 +59,9 @@ module "elastic_beanstalk_application" {
 
   source      = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-application.git?ref=tags/0.1.6"
 
-  namespace   = var.sys_namespace
-  name        = var.sys_name
-  stage       = var.stage
+  stage       = terraform.workspace
+  name        = "${terraform.workspace}-jenkins-sa"
+  namespace   = "acio"
 
   description = var.description
   delimiter   = var.delimiter
@@ -49,9 +82,9 @@ module "elastic_beanstalk_environment" {
 
   source                       = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-environment.git?ref=tags/0.13.0"
 
-  namespace                    = var.sys_namespace
-  name                         = var.sys_name
-  stage                        = var.stage
+  stage                        = terraform.workspace
+  name                         = "${terraform.workspace}-jenkins-sa"
+  namespace                    = "acio"
 
   zone_id                      = var.zone_id
   app                          = module.elastic_beanstalk_application.app_name
@@ -105,9 +138,9 @@ module "ecr" {
 
   source     = "git::https://github.com/cloudposse/terraform-aws-ecr.git?ref=tags/0.7.0"
 
-  namespace  = var.sys_namespace
-  name       = var.sys_name
-  stage      = var.stage
+  stage      = terraform.workspace
+  name       = "${terraform.workspace}-jenkins-sa"
+  namespace  = "acio"
 
   delimiter  = var.delimiter
   attributes = [compact(concat(var.attributes, list("ecr")))]
@@ -128,9 +161,9 @@ module "efs" {
 
   source             = "git::https://github.com/cloudposse/terraform-aws-efs.git?ref=tags/0.10.0"
 
-  namespace          = var.sys_namespace
-  name               = var.sys_name
-  stage              = var.stage
+  stage              = terraform.workspace
+  name               = "${terraform.workspace}-jenkins-sa"
+  namespace          = "acio"
 
   aws_region         = var.aws_region
   vpc_id             = var.vpc_id
@@ -161,9 +194,9 @@ module "efs_backup" {
 
   source                             = "git::https://github.com/cloudposse/terraform-aws-efs-backup.git?ref=tags/0.9.0"
 
-  name                               = var.sys_name
-  stage                              = var.stage
-  namespace                          = var.sys_namespace
+  stage                              = terraform.workspace
+  name                               = "${terraform.workspace}-jenkins-sa"
+  namespace                          = "acio"
 
   region                             = var.aws_region
   vpc_id                             = var.vpc_id
@@ -171,7 +204,7 @@ module "efs_backup" {
   use_ip_address                     = var.use_efs_ip_address
   noncurrent_version_expiration_days = var.noncurrent_version_expiration_days
   ssh_key_pair                       = var.ssh_key_pair
-  modify_security_group              = "false"
+  modify_security_group              = false
   datapipeline_config                = var.datapipeline_config
   delimiter                          = var.delimiter
   attributes                         = [compact(concat(var.attributes, list("efs-backup")))]
@@ -192,9 +225,9 @@ module "cicd" {
 
   source              = "git::https://github.com/cloudposse/terraform-aws-cicd.git?ref=tags/0.7.0"
 
-  namespace           = var.sys_namespace
-  name                = var.sys_name
-  stage               = var.stage
+  stage               = terraform.workspace
+  name                = "${terraform.workspace}-jenkins-sa"
+  namespace           = "acio"
 
   enabled             = true
   privileged_mode     = true
@@ -223,29 +256,6 @@ module "cicd" {
 # -- } --
 #
 
-# Label for EC2 slaves
-#
-# dedicated jenkins-role init/var/constant block
-#
-# -- { --
-#
-module "label_slaves" {
-
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.14.1"
-
-  namespace  = var.sys_namespace
-  name       = var.sys_name
-  stage      = var.stage
-
-  delimiter  = var.delimiter
-  attributes = [compact(concat(var.attributes, list("slaves")))]
-  tags       = var.tags
-}
-
-#
-# -- } --
-#
-
 # Security Group for EC2 slaves
 #
 # dedicated jenkins-role init/var/constant block
@@ -254,7 +264,7 @@ module "label_slaves" {
 #
 resource "aws_security_group" "slaves" {
 
-  name              = module.label_slaves.id
+  name              = "${terraform.workspace}-jenkins-sa"
   description       = "Security Group for Jenkins EC2 slaves"
   vpc_id            = var.vpc_id
 
@@ -284,45 +294,7 @@ resource "aws_security_group" "slaves" {
     cidr_blocks     = ["0.0.0.0/0"]
   }
 
-  tags              = module.label_slaves.tags
-}
-
-#
-# -- } --
-#
-
-# Policy document with permissions to launch new EC2 instances
-# https://wiki.jenkins.io/display/JENKINS/Amazon+EC2+Plugin
-data "aws_iam_policy_document" "slaves" {
-
-  statement {
-
-    sid = "AllowLaunchingEC2Instances"
-
-    actions = [
-      "ec2:DescribeSpotInstanceRequests",
-      "ec2:CancelSpotInstanceRequests",
-      "ec2:GetConsoleOutput",
-      "ec2:RequestSpotInstances",
-      "ec2:RunInstances",
-      "ec2:StartInstances",
-      "ec2:StopInstances",
-      "ec2:TerminateInstances",
-      "ec2:CreateTags",
-      "ec2:DeleteTags",
-      "ec2:DescribeInstances",
-      "ec2:DescribeKeyPairs",
-      "ec2:DescribeRegions",
-      "ec2:DescribeImages",
-      "ec2:DescribeAvailabilityZones",
-      "ec2:DescribeSecurityGroups",
-      "ec2:DescribeSubnets",
-      "iam:PassRole",
-    ]
-
-    resources = ["*"]
-    effect    = "Allow"
-  }
+  tags              = var.tags
 }
 
 #
@@ -338,7 +310,7 @@ data "aws_iam_policy_document" "slaves" {
 resource "aws_iam_policy" "slaves" {
 
   path        = "/"
-  name        = module.label_slaves.id
+  name        = "${terraform.workspace}-jenkins-sa"
   description = "Policy for EC2 instance profile to allow launching Jenkins slaves"
   policy      = data.aws_iam_policy_document.slaves.json
 }
