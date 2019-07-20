@@ -47,22 +47,21 @@ module "elastic_beanstalk_application" {
 #
 module "elastic_beanstalk_environment" {
 
-  source        = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-environment.git?ref=tags/0.13.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-environment.git?ref=tags/0.13.0"
 
-  namespace     = var.sys_namespace
-  name          = var.sys_name
-  stage         = var.stage
+  namespace                    = var.sys_namespace
+  name                         = var.sys_name
+  stage                        = var.stage
 
-  zone_id       = var.zone_id
-  app           = module.elastic_beanstalk_application.app_name
-  instance_type = var.master_instance_type
-  keypair       = var.ssh_key_pair
+  zone_id                      = var.zone_id
+  app                          = module.elastic_beanstalk_application.app_name
+  instance_type                = var.master_instance_type
+  keypair                      = var.ssh_key_pair
 
-  autoscale_min = 1
-  autoscale_max = 1
-  updating_min_in_service = 0
-
-  updating_max_batch = 1
+  autoscale_min                = 1
+  autoscale_max                = 1
+  updating_min_in_service      = 0
+  updating_max_batch           = 1
 
   healthcheck_url              = var.healthcheck_url
   loadbalancer_type            = var.loadbalancer_type
@@ -74,13 +73,12 @@ module "elastic_beanstalk_environment" {
   security_groups              = var.security_groups
 
   solution_stack_name          = var.solution_stack_name
-
   env_default_key              = var.env_default_key
   env_default_value            = var.env_default_value
 
   # Provide EFS DNS name to EB in the `EFS_HOST` ENV var. EC2 instance will mount to the EFS filesystem and use it to store Jenkins state
   # Add slaves Security Group `JENKINS_SLAVE_SECURITY_GROUPS` (comma-separated if more than one). Will be used by Jenkins to init the EC2 plugin to launch slaves inside the Security Group
-  env_vars = merge(
+  env_vars                     = merge(
     map(
       "EFS_HOST", var.use_efs_ip_address ? module.efs.mount_target_ips[0] : module.efs.dns_name,
       "USE_EFS_IP", var.use_efs_ip_address,
@@ -88,9 +86,9 @@ module "elastic_beanstalk_environment" {
     ), var.env_vars
   )
 
-  delimiter  = var.delimiter
-  attributes = [compact(concat(var.attributes, list("eb-env")))]
-  tags       = var.tags
+  delimiter                    = var.delimiter
+  attributes                   = [compact(concat(var.attributes, list("eb-env")))]
+  tags                         = var.tags
 }
 
 #
@@ -141,12 +139,12 @@ module "efs" {
   zone_id            = var.zone_id
 
   # EC2 instances (from `elastic_beanstalk_environment`) and DataPipeline instances (from `efs_backup`) are allowed to connect to the EFS
-  security_groups = [module.elastic_beanstalk_environment.security_group_id, module.efs_backup.security_group_id]
+  security_groups    = [module.elastic_beanstalk_environment.security_group_id, module.efs_backup.security_group_id]
 
-  delimiter  = var.delimiter
-  attributes = [compact(concat(var.attributes, list("efs")))]
-  tags       = var.tags
-  region = var.aws_region
+  delimiter          = var.delimiter
+  attributes         = [compact(concat(var.attributes, list("efs")))]
+  tags               = var.tags
+  region             = var.aws_region
 }
 
 #
@@ -198,16 +196,16 @@ module "cicd" {
   name                = var.sys_name
   stage               = var.stage
 
-  enabled             = "true"
-  privileged_mode     = "true"
-  poll_source_changes = "true"
+  enabled             = true
+  privileged_mode     = true
+  poll_source_changes = true
 
   app                 = module.elastic_beanstalk_application.app_name
   env                 = module.elastic_beanstalk_environment.name
-  github_oauth_token  = var.github_oauth_token
-  repo_owner          = var.github_organization
-  repo_name           = var.github_repo_name
-  branch              = var.github_branch
+  github_oauth_token  = var.sys_github_jenkins_oauth_token
+  repo_owner          = var.sys_github_jenkins_organization
+  repo_name           = var.sys_github_jenkins_repo_name
+  branch              = var.sys_github_jenkins_branch
   build_image         = var.build_image
   build_compute_type  = var.build_compute_type
 
@@ -256,20 +254,22 @@ module "label_slaves" {
 #
 resource "aws_security_group" "slaves" {
 
-  name        = module.label_slaves.id
-  description = "Security Group for Jenkins EC2 slaves"
-  vpc_id      = var.vpc_id
+  name              = module.label_slaves.id
+  description       = "Security Group for Jenkins EC2 slaves"
+  vpc_id            = var.vpc_id
 
-  # Allow the provided Security Groups to connect to Jenkins slave instances
+  # allow the provided Security Groups to connect to Jenkins slave instances
   ingress {
+
     from_port       = 0
     to_port         = 0
     protocol        = -1
     security_groups = [var.security_groups]
   }
 
-  # Allow Jenkins master instance to communicate with Jenkins slave instances on SSH port 22
+  # allow Jenkins master instance to communicate with Jenkins slave instances on SSH port 22
   ingress {
+
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
@@ -277,13 +277,14 @@ resource "aws_security_group" "slaves" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
   }
 
-  tags = module.label_slaves.tags
+  tags              = module.label_slaves.tags
 }
 
 #
@@ -295,6 +296,7 @@ resource "aws_security_group" "slaves" {
 data "aws_iam_policy_document" "slaves" {
 
   statement {
+
     sid = "AllowLaunchingEC2Instances"
 
     actions = [

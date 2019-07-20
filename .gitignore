@@ -56,7 +56,7 @@ userdata*.sh
 # local letsencrypt path
 # --
 
-.letsencrypt/*
+.letsencrypt
 
 #
 # local archives
@@ -67,4 +67,3 @@ userdata*.sh
 *.gzip
 *.7z
 *.tar
-

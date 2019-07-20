@@ -4,8 +4,12 @@
 # @author: Patrick Paechnatz <patrick.paechnatz@allcloud.io>
 # @version: 0.1.1 <alpha>
 # @createdAt: 2019/07/19
-# @updatedAt: 2019/07/19
+# @updatedAt: 2019/07/20
 #
+
+terraform {
+  required_version = ">= 0.12"
+}
 
 #
 # dedicated jenkins-role init/var/constant block

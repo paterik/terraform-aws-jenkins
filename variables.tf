@@ -41,6 +41,29 @@ variable "sys_build" {
   default     = "preview"
 }
 
+variable "sys_github_jenkins_oauth_token" {
+  type        = "string"
+  description = "our github auth token to access private allcloud-jenkins dockerfile sources"
+}
+
+variable "sys_github_jenkins_organization" {
+  type        = "string"
+  default     = "paterik"
+  description = "GitHub organization, e.g. 'allcloud'. By default, this module will deploy 'https://github.com/paterik/terraform-jenkins-docker' repository"
+}
+
+variable "sys_github_jenkins_repo_name" {
+  type        = "string"
+  default     = "terraform-jenkins-docker"
+  description = "GitHub repository name, e.g. 'terraform-jenkins-docker'. By default, this module will deploy 'https://github.com/paterik/terraform-jenkins-docker' repository"
+}
+
+variable "sys_github_jenkins_branch" {
+  type        = "string"
+  default     = "master"
+  description = "GitHub repository branch, e.g. 'master'. By default, this module will deploy 'https://github.com/paterik/terraform-jenkins-docker' master branch"
+}
+
 #
 # application stack variables
 #
@@ -137,30 +160,6 @@ variable "ssh_key_pair" {
   type        = "string"
   default     = ""
   description = "Name of SSH key that will be deployed on Elastic Beanstalk and DataPipeline instance. The key should be present in AWS"
-}
-
-variable "github_oauth_token" {
-  type        = "string"
-  default     = ""
-  description = "GitHub Oauth Token for accessing private repositories. Leave it empty when deploying a public 'Jenkins' repository, e.g. https://github.com/dunkelfrosch/ebsc-jenkins"
-}
-
-variable "github_organization" {
-  type        = "string"
-  default     = "dunkelfrosch"
-  description = "GitHub organization, e.g. 'cloudposse'. By default, this module will deploy 'https://github.com/dunkelfrosch/ebsc-jenkins' repository"
-}
-
-variable "github_repo_name" {
-  type        = "string"
-  default     = "ebsc-jenkins"
-  description = "GitHub repository name, e.g. 'jenkins'. By default, this module will deploy 'https://github.com/dunkelfrosch/ebsc-jenkins' repository"
-}
-
-variable "github_branch" {
-  type        = "string"
-  default     = "master"
-  description = "GitHub repository branch, e.g. 'master'. By default, this module will deploy 'https://github.com/dunkelfrosch/ebsc-jenkins' master branch"
 }
 
 # http://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref.html#build-env-ref-available
