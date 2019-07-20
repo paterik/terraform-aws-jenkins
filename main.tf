@@ -165,7 +165,6 @@ module "efs" {
   name               = "${terraform.workspace}-jenkins-sa"
   namespace          = "acio"
 
-  aws_region         = var.aws_region
   vpc_id             = var.vpc_id
   subnets            = var.private_subnets
   availability_zones = var.availability_zones
