@@ -57,7 +57,7 @@ provider "aws" {
 
 module "elastic_beanstalk_application" {
 
-  source      = "git::https://github.com/cloudposse/terraform-aws-elastic-beanstalk-application.git?ref=tags/0.1.6"
+  source      = "git::https://github.com/paterik/terraform-aws-elastic-beanstalk-application.git?ref=master"
 
   stage       = terraform.workspace
   name        = "${terraform.workspace}-jenkins-sa"
